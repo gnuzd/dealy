@@ -10,6 +10,12 @@ export default {
         .collection("_superusers")
         .authWithPassword(env.PB_EMAIL, env.PB_PASSWORD);
 
+      const result = await pb.collection("deals").getList(1, 50, {
+        sort: "-created",
+      });
+      deals = result.items;
+      console.log(deals);
+
       // 2. Định nghĩa các sàn cần quét
       const targetUrls = [
         { url: "https://www.ebay.com/b/iPhone/9355/bn_7110031", store: "eBay" },
