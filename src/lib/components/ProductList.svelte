@@ -1,9 +1,39 @@
 <script lang="ts">
   import clsx from "clsx";
-  import { ChevronRight, LayoutGrid, List } from "lucide-svelte";
-  import { deals } from "$lib/data";
-  import store from "$lib/store.svelte";
   import { match } from "ts-pattern";
+  import { ChevronRight, LayoutGrid, List } from "lucide-svelte";
+  import type { RecordModel } from "pocketbase";
+
+  import store from "$lib/store.svelte";
+  import pb from "$lib/pb";
+  import { onMount } from "svelte";
+
+  let deals = $state<RecordModel[]>([]);
+
+  async function fetchInitialProducts() {
+    const result = await pb.collection("deals").getList(1, 50, {
+      sort: "-created",
+    });
+    deals = result.items;
+    console.log(deals);
+  }
+
+  onMount(async () => {
+    await fetchInitialProducts();
+
+    pb.collection("deals").subscribe("*", ({ action, record }) => {
+      match(action)
+        .with("create", () => (deals = [record, ...deals]))
+        .with(
+          "update",
+          () => (deals = deals.map((p) => (p.id === record.id ? record : p))),
+        )
+        .with(
+          "delete",
+          () => (deals = deals.filter((p) => p.id !== record.id)),
+        );
+    });
+  });
 </script>
 
 <div class="flex items-center justify-between mb-4">
@@ -25,7 +55,7 @@
       .otherwise(() => "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"),
   )}
 >
-  {#each [...deals, ...deals] as deal}
+  {#each deals as deal}
     <div
       class="card card-compact bg-base-100 shadow-sm border border-base-300 group hover:shadow-md transition-all"
     >
@@ -57,5 +87,7 @@
         </div>
       </div>
     </div>
+  {:else}
+    <p>Đang quét deal mới...</p>
   {/each}
 </div>

@@ -2,8 +2,8 @@ import PocketBase from "pocketbase";
 import { parseHTML } from "linkedom";
 
 export default {
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
-    const pb = new PocketBase(env.PB_URL);
+  async scheduled(event: any, env: any, ctx: any) {
+    const pb = new PocketBase(env.PUBLIC_PB_URL);
 
     try {
       await pb
