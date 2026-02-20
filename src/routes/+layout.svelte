@@ -1,0 +1,36 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import "./layout.css";
+  import store from "$lib/store.svelte";
+  import Footer from "$lib/components/Footer.svelte";
+  import { match } from "ts-pattern";
+  import clsx from "clsx";
+  import DesktopSidebar from "$lib/components/DesktopSidebar.svelte";
+  import Header from "$lib/components/Header.svelte";
+  import BottomNavigation from "$lib/components/BottomNavigation.svelte";
+
+  const { children } = $props();
+
+  onMount(() => {
+    if (typeof window !== "undefined" && window.__TAURI_INTERNALS__) {
+      store.setPlatform("desktop");
+    }
+  });
+</script>
+
+<div class="bg-base-100 font-sans transition-colors duration-300">
+  <div class="flex h-screen w-full overflow-hidden">
+    <DesktopSidebar />
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+      <Header />
+
+      <main class="flex-1 h-full overflow-y-auto p-4 md:p-6 bg-base-200/30">
+        {@render children()}
+
+        <Footer />
+      </main>
+      <BottomNavigation />
+    </div>
+  </div>
+</div>
