@@ -18,6 +18,11 @@
   });
 </script>
 
+<svelte:head>
+  <link rel="icon" href="/" />
+  <title>Dealy App</title>
+</svelte:head>
+
 <div class="bg-base-100 font-sans transition-colors duration-300">
   <div class="flex h-screen w-full overflow-hidden">
     <DesktopSidebar />
