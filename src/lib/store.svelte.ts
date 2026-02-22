@@ -1,5 +1,11 @@
 import type { Platform, Tab } from "./types";
 
+export interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'info' | 'success' | 'error' | 'warning';
+}
+
 export class Store {
   platform = $state<Platform>("web");
   activeTab = $state<Tab>("home");
@@ -8,6 +14,9 @@ export class Store {
   // Auth modal
   showAuthModal = $state(false);
   authMode = $state<"signin" | "signup">("signin");
+
+  // Toasts
+  toasts = $state<ToastMessage[]>([]);
 
   setPlatform(platform: Platform) {
     this.platform = platform;
@@ -33,6 +42,21 @@ export class Store {
 
   logout() {
     this.isLoggedIn = false;
+  }
+  
+  showToast(message: string, type: ToastMessage['type'] = 'info', duration = 3000) {
+    const id = Date.now();
+    this.toasts = [...this.toasts, { id, message, type }];
+    
+    if (duration > 0) {
+      setTimeout(() => {
+        this.removeToast(id);
+      }, duration);
+    }
+  }
+
+  removeToast(id: number) {
+    this.toasts = this.toasts.filter(t => t.id !== id);
   }
 }
 

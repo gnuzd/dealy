@@ -7,6 +7,7 @@
   import Header from "$lib/components/Header.svelte";
   import BottomNavigation from "$lib/components/BottomNavigation.svelte";
   import AuthModal from "$lib/components/AuthModal.svelte";
+  import Toaster from "$lib/components/Toaster.svelte";
 
   const { children } = $props();
 
@@ -23,6 +24,7 @@
 </svelte:head>
 
 <AuthModal />
+<Toaster />
 
 <div class="bg-base-100 font-sans transition-colors duration-300">
   <div class="flex h-screen w-full overflow-hidden">

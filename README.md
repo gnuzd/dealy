@@ -11,15 +11,19 @@
 * **Fonts:** Ưu tiên Sans-serif hiện đại (Inter, Slate).
 * **Build:** Bun \+ adapter-static (SPA mode — SSR disabled cho Tauri).
 
-## **3\. Triết lý Thiết kế (UI/UX)**
+## **3. Triết lý Thiết kế (UI/UX)**
 
-* **Phong cách:** Neobrutalism tối giản kết hợp với Modern SaaS.
+* **Phong cách:** "Modern & Minimalist" (Hiện đại & Tối giản) kết hợp với các yếu tố tiện ích của SaaS.
 * **Đặc điểm:**
-  * Sử dụng các góc bo tròn lớn (rounded-3xl, rounded-\[2.5rem\]).
-  * Shadow mềm mại (shadow-xl shadow-slate-200).
-  * Typography cực mạnh (font-black, tracking-tighter).
+  * Giao diện sạch sẽ, tập trung vào nội dung và không gian trắng.
+  * Sử dụng các góc bo tròn (ví dụ: `rounded-2xl`).
+  * Sử dụng border mảnh (`border-slate-200`) thay vì shadow nặng để phân tách các khối UI.
+  * Typography rõ ràng, dễ đọc (`font-bold`, `font-semibold`).
   * Animation: fly, fade từ svelte/transition.
-  * Border radius field theo DaisyUI config (không override trên btn/input).
+  * Border radius cho các thành phần như button tuân thủ theo cấu hình của DaisyUI.
+* **Lưu ý về Card:**
+  * **LinkScanner Card:** Áp dụng phong cách "Modern & Minimalist", sử dụng màu sắc thương hiệu của merchant làm điểm nhấn.
+  * **OfferCard:** Giữ thiết kế gốc với shadow mềm mại để tạo sự khác biệt thị giác.
 * **Màu sắc chủ đạo:**
   * Shopee: Orange (from-orange-500 to-red-600).
   * Lazada: Navy Blue (from-blue-700 to-indigo-800).
@@ -104,7 +108,7 @@ User paste URL
   ├─ [client-side, INSTANT]
   │    detectMerchant() → validate platform + gradient màu
   │    generateAffiliateLink() → deeplink hiển thị ngay
-  │    → Deeplink card: Copy link + Mua ngay button
+  │    → Deeplink card: Copy link, Share & Mua ngay buttons
   │
   └─ [async, compare Worker]
        extractProductName(url) → keyword (regex Shopee/Tiki/Lazada/Sendo)

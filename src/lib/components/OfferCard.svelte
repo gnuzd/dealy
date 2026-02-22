@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { ArrowRight } from "lucide-svelte";
-  import { fade } from "svelte/transition";
-  import { fly } from "svelte/transition";
+  import { ArrowRight, Copy, Check } from "lucide-svelte";
+  import { fade, fly, scale } from "svelte/transition";
   import { getMerchantColor, generateAffiliateLink } from "$lib/constants";
   import type { Offer } from "$lib/types";
 
@@ -10,107 +9,106 @@
   let copied = $state(false);
 
   const copyCode = async (code: string) => {
+    if (!code) return;
     await navigator.clipboard.writeText(code);
     copied = true;
     setTimeout(() => (copied = false), 2000);
   };
 
   const formatDiscount = (text: string) => {
-    const match = text.match(/(\d+%\s*|\d+[kK]|\d+[\.,]\d+\s*VNĐ)/i);
-    return match ? match[0].replace(/VNĐ/i, "đ") : "HOT";
+    // Matches: 50%, 50k, 50K, 50.000đ, 50,000VNĐ, 50.000 VNĐ, etc.
+    const match = text.match(/(\d+%\s*|\d+[kK]|\d+[\.,]\d+\s*(?:VNĐ|đ|VND))/i);
+    if (!match) return "HOT";
+    return match[0].replace(/VNĐ|VND/i, "đ").trim().toUpperCase();
+  };
+
+  const getCleanTitle = (name: string) => {
+    const discount = formatDiscount(name);
+    if (discount === "HOT") return name;
+    return name.replace(new RegExp(`GIẢM\\s*${discount.replace('%', '\\%')}`, 'i'), '').trim() 
+           || name.replace(new RegExp(discount.replace('%', '\\%'), 'i'), '').trim();
   };
 </script>
 
 <div
-  in:fly={{ y: 16, duration: 280, opacity: 0 }}
-  class="relative flex w-full gap-3 bg-base-100 rounded-3xl shadow-xl shadow-slate-200 border border-base-200 group hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+  in:fly={{ y: 20, duration: 400, opacity: 0 }}
+  class="relative group bg-white rounded-[2rem] p-1.5 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
 >
-  <!-- Merchant strip -->
-  <div
-    class="relative w-28 flex-none flex flex-col items-center justify-center p-2 text-white {getMerchantColor(data.merchant)}"
-  >
-    <div class="avatar online">
-      <div
-        class="w-14 h-14 rounded-full ring ring-white ring-offset-base-100 ring-offset-2 bg-white"
-      >
-        <img
-          src={data.image}
-          alt="shop-logo"
-          class="object-contain p-1"
-          referrerpolicy="no-referrer"
-        />
+  <div class="flex gap-4 p-3 bg-slate-50/50 rounded-[1.75rem] border border-white h-32 items-center relative overflow-hidden">
+    <!-- Subtle Background Brand Accent -->
+    <div class="absolute -right-4 -top-10 w-32 h-32 rounded-full opacity-[0.03] blur-2xl {getMerchantColor(data.merchant)}"></div>
+
+    <!-- Left: Brand Image -->
+    <div class="w-24 h-24 flex-none rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center p-2.5 relative group-hover:scale-105 transition-transform duration-500 overflow-hidden">
+      <img
+        src={data.image}
+        alt={data.merchant}
+        class="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500"
+        referrerpolicy="no-referrer"
+      />
+      <div class="absolute bottom-1 right-1">
+        <div class="badge badge-primary badge-xs py-2 px-1.5 text-[7px] font-black italic tracking-tighter uppercase">Verified</div>
       </div>
     </div>
 
-    <div class="text-[10px] font-black mt-2 tracking-tighter uppercase opacity-90">
-      {data.merchant}
-    </div>
-  </div>
-
-  <!-- Ticket perforation dots -->
-  <div class="flex flex-col justify-between py-2 z-10">
-    {#each Array(5) as _}
-      <div class="w-4 h-4 rounded-full bg-base-200 -mr-2 shadow-inner"></div>
-    {/each}
-  </div>
-
-  <!-- Content -->
-  <div class="flex-1 p-4 flex flex-col justify-between min-w-0 bg-white">
-    <div class="flex justify-between items-center mb-1">
-      <span
-        class="text-[9px] font-bold text-slate-400 px-2 py-0.5 rounded-full bg-slate-100 uppercase tracking-wider"
-      >
-        {data.domain}
-      </span>
-      <div class="flex items-center gap-1 text-[10px] font-bold text-error">
-        <span class="relative flex h-2 w-2">
-          <span
-            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
-          ></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-        </span>
-        Hạn: {data.end_time.split("-").reverse().slice(0, 2).join("/")}
+    <!-- Right: Info & Actions -->
+    <div class="flex-1 min-w-0 h-full flex flex-col justify-between py-0.5">
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full {getMerchantColor(data.merchant)} opacity-60"></span>
+            {data.merchant} • {data.domain}
+          </span>
+          <span class="text-[9px] font-black text-error px-2 py-0.5 rounded-full bg-error/5 flex items-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-error animate-pulse"></span>
+            {data.end_time.split("-").reverse().slice(0, 2).join("/")}
+          </span>
+        </div>
+        
+        <h3 class="text-[15px] font-black text-slate-900 leading-tight mb-0.5 italic truncate uppercase tracking-tight">
+          Giảm {formatDiscount(data.name)}
+        </h3>
+        <p class="text-[11px] text-slate-500 font-medium line-clamp-1 truncate opacity-80">
+          {data.content || getCleanTitle(data.name)}
+        </p>
       </div>
-    </div>
 
-    <div class="mb-2">
-      <h3 class="text-lg font-black text-slate-800 tracking-tighter leading-none truncate">
-        GIẢM {formatDiscount(data.name)}
-      </h3>
-      <p class="text-[11px] text-slate-500 line-clamp-2 leading-tight mt-1 font-medium italic">
-        {data.content}
-      </p>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <div
-        class="flex-1 flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200"
-      >
-        <span class="text-[9px] font-bold text-slate-400 px-1 uppercase">CODE:</span>
-        <span class="text-xs font-mono font-black text-primary flex-1 truncate">
-          {data.coupons?.[0]?.coupon_code || "SĂN NGAY"}
-        </span>
+      <div class="flex items-center gap-2 mt-auto">
+        <!-- Coupon Code Button -->
         <button
-          class="btn btn-primary btn-xs lowercase text-[10px] h-6 min-h-0"
           onclick={() => copyCode(data.coupons?.[0]?.coupon_code ?? "")}
+          class="flex-1 bg-white border border-slate-200 rounded-xl px-3 h-9 flex items-center justify-between hover:border-primary transition-all duration-300 cursor-pointer group/code active:scale-95"
         >
-          {#if copied}
-            <span in:fade={{ duration: 150 }}>OK ✓</span>
-          {:else}
-            <span in:fade={{ duration: 150 }}>COPY</span>
-          {/if}
+          <div class="flex-1 min-w-0 text-left">
+            <span class="text-[7px] block leading-none text-slate-400 font-black uppercase tracking-widest mb-0.5">Code</span>
+            <span class="text-[12px] font-mono font-black text-slate-800 truncate block uppercase leading-none">
+              {data.coupons?.[0]?.coupon_code || 'SĂN NGAY'}
+            </span>
+          </div>
+          
+          <div class="flex items-center justify-center ml-2 w-6 h-6 rounded-lg bg-slate-50 group-hover/code:bg-primary group-hover/code:text-white transition-colors">
+            {#if copied}
+              <div in:scale={{ duration: 200, start: 0.5 }}>
+                <Check size={12} strokeWidth={4} />
+              </div>
+            {:else}
+              <div in:scale={{ duration: 200, start: 0.5 }}>
+                <Copy size={12} strokeWidth={3} />
+              </div>
+            {/if}
+          </div>
         </button>
-      </div>
 
-      <a
-        href={generateAffiliateLink(data.link)}
-        target="_blank"
-        rel="noopener noreferrer"
-        title={data.name}
-        class="btn btn-square btn-outline btn-sm border-slate-200 hover:bg-primary hover:border-primary group/btn"
-      >
-        <ArrowRight size={16} class="group-hover/btn:text-white transition-colors" />
-      </a>
+        <!-- Main Action Button -->
+        <a
+          href={generateAffiliateLink(data.link)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-9 h-9 rounded-xl bg-black text-white flex items-center justify-center hover:bg-slate-800 hover:scale-110 active:scale-95 transition-all duration-300 flex-none shadow-lg shadow-black/10"
+        >
+          <ArrowRight size={18} strokeWidth={3} />
+        </a>
+      </div>
     </div>
   </div>
 </div>
