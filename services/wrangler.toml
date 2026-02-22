@@ -1,11 +1,16 @@
 name = "dealy-scraper-service"
-main = "scraper-worker.ts"
+main = "index.ts"
 compatibility_date = "2024-01-01"
 
 [triggers]
 # Chạy mỗi 30 phút một lần
-crons = ["*/30 * * * *"]
+crons = ["0 0 * * *"]
 
-# Cấu hình để linkedom và pocketbase hoạt động trên Worker
+[vars]
+PB_EMAIL = "admin@dealy.com"
+PB_URL = "https://dealy.pockethost.io/"
+SCRAPE_KEY = "checking"
+
+# Cấu hình để pocketbase hoạt động trên Worker
 [build]
 command = "bun install"
