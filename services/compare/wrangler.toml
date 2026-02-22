@@ -1,0 +1,9 @@
+name = "dealy-compare-service"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+# Accesstrade access key per locale — wrangler secret put AT_KEY_VN
+# wrangler secret put AT_KEY_VN
+
+[build]
+command = "bun install"
