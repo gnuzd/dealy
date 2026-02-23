@@ -1,6 +1,8 @@
 // ─── Affiliate Networks ──────────────────────────────────────────────────────
 // Extensible: thêm network mới (CJ, Awin, Impact, v.v.) để support global
 
+import { PUBLIC_AT_PUB_ID } from "$env/static/public";
+
 export interface AffiliateNetwork {
   name: string;
   generateLink: (productUrl: string, pubId: string) => string;
@@ -8,15 +10,15 @@ export interface AffiliateNetwork {
 
 const ACCESSTRADE: AffiliateNetwork = {
   name: "Accesstrade",
-  generateLink: (url, pubId) =>
-    `https://go.isclix.com/deep_link/${pubId}?url=${encodeURIComponent(url)}&utm_source=dealy_app`,
+  generateLink: (url, pubId) => {
+    const hostname = window ? window.location.hostname : "";
+    return `https://${hostname}/bridge?deeplink=https://go.isclix.com/deep_link/${pubId}?url=${encodeURIComponent(url)}&utm_source=dealy_app&&ul_path=true`;
+  },
 };
 
 // TODO: thêm network cho các thị trường khác
 // const IMPACT_RADIUS: AffiliateNetwork = { name: "Impact", generateLink: ... };
 // const CJ_AFFILIATE: AffiliateNetwork = { name: "CJ", generateLink: ... };
-
-export const AFFILIATE_PUB_ID = "6919596271058314754";
 
 /** Chọn affiliate network dựa trên URL sản phẩm (TLD, domain, v.v.) */
 function getAffiliateNetwork(_productUrl: string): AffiliateNetwork {
@@ -27,7 +29,7 @@ function getAffiliateNetwork(_productUrl: string): AffiliateNetwork {
 
 export function generateAffiliateLink(productUrl: string): string {
   const cleanUrl = productUrl.split("?")[0];
-  return getAffiliateNetwork(cleanUrl).generateLink(cleanUrl, AFFILIATE_PUB_ID);
+  return getAffiliateNetwork(cleanUrl).generateLink(cleanUrl, PUBLIC_AT_PUB_ID);
 }
 
 // ─── Merchant Detection ───────────────────────────────────────────────────────
@@ -66,7 +68,9 @@ export function detectMerchant(url: string) {
 
 /** Trả về Tailwind bg class đầy đủ cho merchant — dùng trong OfferCard */
 export function getMerchantColor(merchant: string): string {
-  const entry = Object.values(MERCHANTS).find((m) => m.name === merchant.toLowerCase());
+  const entry = Object.values(MERCHANTS).find(
+    (m) => m.name === merchant.toLowerCase(),
+  );
   return entry
     ? `bg-gradient-to-br ${entry.gradient}`
     : "bg-gradient-to-br from-blue-600 to-indigo-700";

@@ -1,6 +1,6 @@
-export type Platform = 'web' | 'desktop' | 'mobile';
+export type Platform = "web" | "desktop" | "mobile";
 
-export type Tab = 'home' | 'deals' | 'voucher' | 'profile';
+export type Tab = "home" | "deals" | "voucher" | "profile";
 
 export interface Coupon {
   coupon_code: string;
@@ -16,4 +16,10 @@ export interface Offer {
   image: string;
   end_time: string;
   coupons?: Coupon[];
+}
+
+export interface ToastMessage {
+  id: number;
+  message: string;
+  type: "info" | "success" | "error" | "warning";
 }

@@ -4,10 +4,9 @@
   import VoucherView from "$lib/components/VoucherView.svelte";
   import QrScannerModal from "$lib/components/QrScannerModal.svelte";
   import store from "$lib/store.svelte";
+  import { generateAffiliateLink } from "$lib/constants";
 
   type Tab = "scanner" | "deals" | "voucher";
-
-  const PUB_ID = "6919596271058314754";
 
   // ── Tab ──────────────────────────────────────────────────────────────────
   // let activeTab = $state<Tab>("scanner");
@@ -74,7 +73,7 @@
       error = "URL không hợp lệ. Ví dụ: https://shopee.vn/...";
       return;
     }
-    generatedLink = `https://go.isclix.com/deep_link/${PUB_ID}?url=${encodeURIComponent(trimmed)}&utm_source=dealy_app`;
+    generatedLink = generateAffiliateLink(trimmed);
   }
 
   function handleScanned(scannedUrl: string) {
