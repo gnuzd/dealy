@@ -1,7 +1,7 @@
 <script lang="ts">
   import store from "$lib/store.svelte";
   import type { Tab } from "$lib/types";
-  import Bell from "@lucide/svelte/icons/bell";
+  import { Bell } from "@lucide/svelte";
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "home", label: "Scanner" },
@@ -26,7 +26,9 @@
     </button>
 
     <!-- Center: tab nav (absolute to truly center regardless of side widths) -->
-    <nav class="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5">
+    <nav
+      class="hidden absolute left-1/2 -translate-x-1/2 md:flex items-center gap-0.5"
+    >
       {#each tabs as tab}
         <button
           onclick={() => store.setTab(tab.key)}
