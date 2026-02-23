@@ -1,6 +1,6 @@
 import type { Platform, Tab } from "./types";
 
-export class Store {
+ class Store {
   platform = $state<Platform>("web");
   activeTab = $state<Tab>("home");
   isLoggedIn = $state(false);
