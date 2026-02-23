@@ -8,7 +8,7 @@
     Globe,
     Link2,
     X,
-  } from "@lucide/svelte";
+  } from "lucide-svelte";
 
   let {
     url = $bindable(),

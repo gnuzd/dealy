@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
   import QrScanner from "qr-scanner";
-  import { Upload, X, ScanLine } from "@lucide/svelte";
+  import { Upload, X, ScanLine } from "lucide-svelte";
 
   let {
     open = $bindable(false),

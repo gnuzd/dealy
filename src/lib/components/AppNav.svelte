@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { Bell } from "lucide-svelte";
+
   import store from "$lib/store.svelte";
   import type { Tab } from "$lib/types";
-  import { Bell } from "@lucide/svelte";
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "home", label: "Scanner" },
