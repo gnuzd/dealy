@@ -1,6 +1,6 @@
 <script lang="ts">
-  import "./layout.css";
-  const { children } = $props();
+  import '../app.css';
+  let { children } = $props();
 </script>
 
 {@render children()}

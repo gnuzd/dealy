@@ -1,0 +1,21 @@
+name = "dealy-get-deals-service"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+PB_URL = "https://dealy.pockethost.io/"
+PB_EMAIL = "admin@dealy.com"
+
+# Pub ID per locale — lưu dưới dạng Cloudflare secret (KHÔNG commit vào git):
+#   wrangler secret put PUB_ID_VN
+#   wrangler secret put PUB_ID_TH
+#   wrangler secret put PUB_ID_ID
+#   wrangler secret put PUB_ID_MY
+#   wrangler secret put PUB_ID_SG
+#   wrangler secret put PUB_ID_PH
+#
+# PB_PASSWORD cũng cần set secret:
+#   wrangler secret put PB_PASSWORD
+
+[build]
+command = "bun install"

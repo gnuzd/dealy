@@ -1,156 +1,112 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
+  import AppNav from '$lib/components/AppNav.svelte';
+  import AppFooter from '$lib/components/AppFooter.svelte';
+  import ScannerView from '$lib/components/ScannerView.svelte';
+  import DealsView from '$lib/components/DealsView.svelte';
+  import VoucherView from '$lib/components/VoucherView.svelte';
+  import QrScannerModal from '$lib/components/QrScannerModal.svelte';
 
-  let name = $state("");
-  let greetMsg = $state("");
+  type Tab = 'scanner' | 'deals' | 'voucher';
 
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
+  const PUB_ID = '6919596271058314754';
+
+  // ── Tab ──────────────────────────────────────────────────────────────────
+  let activeTab = $state<Tab>('scanner');
+
+  // ── Scanner state — persists when switching tabs ──────────────────────────
+  let url           = $state('');
+  let generatedLink = $state('');
+  let error         = $state('');
+  let scannerOpen   = $state(false);
+
+  // ── Deals state — loaded once on first visit, cached ─────────────────────
+  let dealsLoaded  = $state(false);
+  let dealsLoading = $state(false);
+
+  // ── Voucher state — loaded once on first visit, cached ───────────────────
+  let vouchersLoaded  = $state(false);
+  let vouchersLoading = $state(false);
+
+  // Load per-tab data only once when tab is first visited
+  $effect(() => {
+    if (activeTab === 'deals' && !dealsLoaded && !dealsLoading) {
+      loadDeals();
+    }
+    if (activeTab === 'voucher' && !vouchersLoaded && !vouchersLoading) {
+      loadVouchers();
+    }
+  });
+
+  async function loadDeals() {
+    dealsLoading = true;
+    // TODO: fetch from get-deals worker when available
+    await new Promise(r => setTimeout(r, 600)); // simulate network
+    dealsLoaded  = true;
+    dealsLoading = false;
+  }
+
+  async function loadVouchers() {
+    vouchersLoading = true;
+    // TODO: fetch from get-deals worker when available
+    await new Promise(r => setTimeout(r, 600));
+    vouchersLoaded  = true;
+    vouchersLoading = false;
+  }
+
+  // ── Scanner logic ─────────────────────────────────────────────────────────
+  function isValidUrl(value: string): boolean {
+    try {
+      const u = new URL(value);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch { return false; }
+  }
+
+  function generate() {
+    error = '';
+    generatedLink = '';
+    const trimmed = url.trim();
+    if (!trimmed) { error = 'Vui lòng nhập URL sản phẩm.'; return; }
+    if (!isValidUrl(trimmed)) { error = 'URL không hợp lệ. Ví dụ: https://shopee.vn/...'; return; }
+    generatedLink = `https://go.isclix.com/deep_link/${PUB_ID}?url=${encodeURIComponent(trimmed)}&utm_source=dealy_app`;
+  }
+
+  function handleScanned(scannedUrl: string) {
+    url = scannedUrl;
+    // Switch to scanner tab if not already there
+    activeTab = 'scanner';
+    generate();
   }
 </script>
 
-<main class="container">
-  <h1>Welcome to Tauri + Svelte</h1>
+<div class="min-h-screen flex flex-col bg-base-200">
 
-  <div class="row">
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo vite" alt="Vite Logo" />
-    </a>
-    <a href="https://tauri.app" target="_blank">
-      <img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank">
-      <img src="/svelte.svg" class="logo svelte-kit" alt="SvelteKit Logo" />
-    </a>
-  </div>
-  <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
+  <AppNav {activeTab} onTabChange={(t) => (activeTab = t)} />
 
-  <form class="row" onsubmit={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
-  </form>
-  <p>{greetMsg}</p>
-</main>
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <!-- Views are kept in DOM but hidden via display:none for instant tab switching.
+         State is never destroyed — scan result, deals, vouchers all persist. -->
 
-<style>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
+    <div class="flex-1 flex flex-col" class:hidden={activeTab !== 'scanner'}>
+      <ScannerView
+        bind:url
+        {error}
+        {generatedLink}
+        ongenerate={generate}
+        onscanrequest={() => (scannerOpen = true)}
+      />
+    </div>
 
-.logo.svelte-kit:hover {
-  filter: drop-shadow(0 0 2em #ff3e00);
-}
+    <div class="flex-1 flex flex-col" class:hidden={activeTab !== 'deals'}>
+      <DealsView loaded={dealsLoaded} />
+    </div>
 
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+    <div class="flex-1 flex flex-col" class:hidden={activeTab !== 'voucher'}>
+      <VoucherView loaded={vouchersLoaded} />
+    </div>
+  </main>
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  <AppFooter />
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
+</div>
 
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
-}
-
-</style>
+<QrScannerModal bind:open={scannerOpen} onscanned={handleScanned} />
